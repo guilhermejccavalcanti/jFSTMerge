@@ -113,18 +113,42 @@ public class RenamingUtils {
 		return left.getParent().equals(right.getParent());
 	}
 
-	public static void generateMutualRenamingConflict(MergeContext context, FSTNode leftNode, FSTNode baseNode,
-			FSTNode rightNode, FSTNode mergeNode, String conflictMessage) {
+	public static void generateMutualRenamingConflict(
+		MergeContext context,
+		FSTNode leftNode,
+		FSTNode baseNode,
+		FSTNode rightNode,
+		FSTNode mergeNode,
+		String conflictMessage
+	) {
+		boolean nodeHadConflict = nodeHasConflict(mergeNode);
 		MergeConflict conflict = new MergeConflict(leftNode, baseNode, rightNode, conflictMessage);
 		((FSTTerminal) mergeNode).setBody(conflict.toString());
 
-		context.renamingConflicts++;
-		removeUnmmatchedNode(context.superImposedTree, leftNode, rightNode, mergeNode);
+		if (Traverser.isInTree(mergeNode, context.superImposedTree)) {
+			boolean visitedMergeNode = context.renamingVisitedMergeNodes.contains(mergeNode);
+			if (!visitedMergeNode || !nodeHadConflict)
+				context.renamingConflicts++;
+
+			if (!visitedMergeNode)
+				context.renamingVisitedMergeNodes.add(mergeNode);
+		}
+
+		FSTNode removedNode = removeUnmmatchedNode(context.superImposedTree, leftNode, rightNode, mergeNode);
+		boolean visitedRemovedNode = context.renamingVisitedMergeNodes.contains(removedNode);
+
+		if (removedNode != null && visitedRemovedNode && nodeHasConflict(removedNode))
+			context.renamingConflicts--;
 	}
 
-	public static void removeUnmmatchedNode(FSTNode mergeTree, FSTNode leftNode, FSTNode rightNode, FSTNode mergeNode) {
-		if (equalIfExists(leftNode, mergeNode) && !equalIfExists(rightNode, leftNode))
+	public static FSTNode removeUnmmatchedNode(FSTNode mergeTree, FSTNode leftNode, FSTNode rightNode, FSTNode mergeNode) {
+		if (equalIfExists(leftNode, mergeNode) && !equalIfExists(rightNode, leftNode)) {
+			FSTNode nodeInTree = Traverser.retrieveNodeFromTree(rightNode, mergeTree);
 			Traverser.removeNode(rightNode, mergeTree);
+			return nodeInTree;
+		}
+
+		return null;
 	}
 
 	private static boolean equalIfExists(FSTNode node1, FSTNode node2) {
@@ -242,15 +266,33 @@ public class RenamingUtils {
 		return bodySimilarity >= JFSTMerge.RENAMING_SIMILARITY_THRESHOLD;
 	}
 
-	public static void runTextualMerge(MergeContext context, FSTNode leftNode, FSTNode baseNode, FSTNode rightNode,
-			FSTNode mergeNode) throws TextualMergeException {
+	public static void runTextualMerge(
+		MergeContext context,
+		FSTNode leftNode,
+		FSTNode baseNode,
+		FSTNode rightNode,
+		FSTNode mergeNode
+	) throws TextualMergeException {
+		boolean nodeHadConflict = nodeHasConflict(mergeNode);
 		((FSTTerminal) mergeNode).setBody(mergeContent(leftNode, baseNode, rightNode));
 		((FSTTerminal) mergeNode).setSpecialTokenPrefix(mergePrefix(leftNode, baseNode, rightNode));
 
-		if (nodeHasConflict(mergeNode))
-			context.renamingConflicts++;
+		if (Traverser.isInTree(mergeNode, context.superImposedTree)) {
+			boolean visitedMergeNode = context.renamingVisitedMergeNodes.contains(mergeNode);
+			if ((!visitedMergeNode || !nodeHadConflict) && nodeHasConflict(mergeNode))
+				context.renamingConflicts++;
+			else if (visitedMergeNode && nodeHadConflict && !nodeHasConflict(mergeNode))
+				context.renamingConflicts--;
 
-		removeUnmmatchedNode(context.superImposedTree, leftNode, rightNode, mergeNode);
+			if (!visitedMergeNode)
+				context.renamingVisitedMergeNodes.add(mergeNode);
+		}
+		
+		FSTNode removedNode = removeUnmmatchedNode(context.superImposedTree, leftNode, rightNode, mergeNode);
+		boolean visitedRemovedNode = context.renamingVisitedMergeNodes.contains(removedNode);
+
+		if (removedNode != null && visitedRemovedNode && nodeHasConflict(removedNode))
+			context.renamingConflicts--;
 	}
 
 	private static String mergeContent(FSTNode leftNode, FSTNode baseNode, FSTNode rightNode)

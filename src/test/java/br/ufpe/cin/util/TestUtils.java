@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class TestUtils {
     private static final String TEST_FILE_NAME = "Test.java";
@@ -24,6 +25,10 @@ public class TestUtils {
             }
         }, true, Charset.defaultCharset().displayName());
         System.setOut(hideStream);
+    }
+
+    public static void simpleAssert() {
+        assertTrue(true);
     }
 
     public static void verifyMergeResultWithRenamingConflict(MergeContext mergeContext, String expectedResult) {
@@ -55,7 +60,7 @@ public class TestUtils {
         ).semistructuredOutput;
     }
 
-    private static String getTestExpectedOutput(String testFilesPath) {
+    public static String getTestExpectedOutput(String testFilesPath) {
         File mergeFile = Paths.get("testfiles", testFilesPath, "merge", TEST_FILE_NAME).toFile();
         String content = FilesManager.readFileContent(mergeFile);
         return FilesManager.getStringContentIntoSingleLineNoSpacing(content);

@@ -23,6 +23,9 @@ public class SafelyMergeSimilarRenamingHandlerTest {
 	private File abstractMethod1 = new File("testfiles/renaming/abstract_method/left/Test.java");
 	private File abstractMethod2 = new File("testfiles/renaming/abstract_method/base/Test.java");
 	private File abstractMethod3 = new File("testfiles/renaming/abstract_method/right/Test.java");
+	private File renamedTwoMethodsWithBodyChanges1 = new File("testfiles/renamingstatistics/left/Test.java");
+	private File renamedTwoMethodsWithBodyChanges2 = new File("testfiles/renamingstatistics/base/Test.java");
+	private File renamedTwoMethodsWithBodyChanges3 = new File("testfiles/renamingstatistics/right/Test.java");
 
     private JFSTMerge jfstMerge = new JFSTMerge();
     private MergeContext mergeContext;
@@ -194,6 +197,18 @@ public class SafelyMergeSimilarRenamingHandlerTest {
 		merge(abstractMethod1, abstractMethod2, abstractMethod3);
 		TestUtils.verifyMergeResultWithRenamingConflict(mergeContext,
 			"<<<<<<<MINEpublicabstractvoidn1();=======publicabstractvoidn2();>>>>>>>YOURS");
+	}
+
+	@Test
+	public void testHandle_whenBothRenameTwoMethodsWithBodyChanges_shouldCountOneRenamingConflict() {
+		merge(
+			renamedTwoMethodsWithBodyChanges1,
+			renamedTwoMethodsWithBodyChanges2,
+			renamedTwoMethodsWithBodyChanges3
+		);
+
+		String expectedOutput = TestUtils.getTestExpectedOutput("renamingstatistics");
+		TestUtils.verifyMergeResultWithRenamingConflict(mergeContext, expectedOutput);
 	}
 
     private void merge(File left, File right) {

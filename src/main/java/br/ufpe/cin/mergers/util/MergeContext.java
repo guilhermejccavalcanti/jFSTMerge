@@ -2,7 +2,9 @@ package br.ufpe.cin.mergers.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -54,7 +56,6 @@ public class MergeContext {
 
 	//statistics
 	public int newElementReferencingEditedOneConflicts = 0;
-	public int renamingConflicts = 0;
 	public int typeAmbiguityErrorsConflicts = 0;
 	public int deletionConflicts = 0;
 	public int innerDeletionConflicts = 0;
@@ -69,6 +70,8 @@ public class MergeContext {
 	public int orderingConflicts 			   = 0;
 	public int duplicatedDeclarationErrors	   = 0;
 	public int equalConflicts     = 0;
+	public int renamingConflicts = 0;
+	public Set<FSTNode> renamingVisitedMergeNodes = new HashSet<>();
 
 	public MergeContext(){
 	}

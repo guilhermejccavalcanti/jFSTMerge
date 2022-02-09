@@ -100,7 +100,7 @@ public final class MethodAndConstructorRenamingAndDeletionHandler implements Con
 	}
 
 	private boolean isInContribution(FSTNode node, FSTNode contributionTree) {
-		return Traverser.isInTree(node, contributionTree);
+		return Traverser.isInTree(node.getType(), node.getName(), contributionTree);
 	}
 
 	private boolean matchesWithEqualBody(FSTNode baseNode, List<FSTNode> addedNodes) {
