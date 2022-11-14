@@ -56,8 +56,8 @@ public class InitializationBlocksHandler implements ConflictHandler {
                             .collect(Collectors.toList());
                 }
 
-                //only when there similar (left and right) nodes we proceed
-                if (rightSimilarBlock != null && leftSimilarBlock != null) {
+                //only when there similar (left or right) nodes we proceed
+                if (rightSimilarBlock != null || leftSimilarBlock != null) {
                     Triple matched = new Triple(leftSimilarBlock, baseBlock, rightSimilarBlock);
                     matchedInitlBlocks.add(matched);
                 }

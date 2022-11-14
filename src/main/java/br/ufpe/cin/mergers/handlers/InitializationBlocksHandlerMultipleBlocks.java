@@ -349,12 +349,12 @@ public class InitializationBlocksHandlerMultipleBlocks implements ConflictHandle
 			StringBuffer rightConflictContent = new StringBuffer();
 			for(FSTNode rightNode : commonVarsNodesMap.get(leftNode)) {
 				String rightContent = (rightNode != null) ? ((FSTTerminal) rightNode).getBody() : "";
-		    	String nodeBody = StringUtils.substringBetween(rightContent, "{", "}").trim();
+		    	String nodeBody = getBodyInitializationBlock(rightContent);
 				rightConflictContent.append(nodeBody);
 				FilesManager.findAndDeleteASTNode(context.superImposedTree, rightContent);
 			}
 			
-	    	String leftConflictContent = StringUtils.substringBetween(leftNodeContent, "{", "}").trim();
+	    	String leftConflictContent = getBodyInitializationBlock(leftNodeContent);
 	    	
 	    	StringBuffer staticBlock = new StringBuffer("static {");
 	    	MergeConflict mergeConflict = new MergeConflict(leftConflictContent, "", rightConflictContent.toString(), "conflicting static blocks");
@@ -415,7 +415,7 @@ public class InitializationBlocksHandlerMultipleBlocks implements ConflictHandle
     	
     	Map<FSTNode, Double> nodesInsertionLevelMap = new HashMap<>();
     	String nodeBody = ((FSTTerminal) node).getBody();
-    	String nodeLines = StringUtils.substringBetween(nodeBody, "{", "}").trim();
+    	String nodeLines = getBodyInitializationBlock(nodeBody);
     	List<String> splitNodeContent = Arrays.asList(nodeLines.split(LINE_BREAK_REGEX));
 
     	calculateInsertionLevels(nodes, nodesInsertionLevelMap, splitNodeContent);
@@ -431,7 +431,7 @@ public class InitializationBlocksHandlerMultipleBlocks implements ConflictHandle
 		for(FSTNode pairNode : nodes) {
         	
     		String pairNodeBody = ((FSTTerminal) pairNode).getBody();
-        	String pairNodeLines = StringUtils.substringBetween(pairNodeBody, "{", "}").trim();
+        	String pairNodeLines = getBodyInitializationBlock(pairNodeBody);
         	List<String> splitPairNodeContent = Arrays.asList(pairNodeLines.split(LINE_BREAK_REGEX));
         	
         	double numOfInsertions = 0;
@@ -486,5 +486,18 @@ public class InitializationBlocksHandlerMultipleBlocks implements ConflictHandle
     	}
     	
     	return baseNode;
+    }
+	
+	private static String getBodyInitializationBlock(String source) {
+	   
+	    return removeContentStartEndInitializationBlock(source);
+    }
+
+    private static String removeContentStartEndInitializationBlock(String source) {
+	    
+		String bodyWithoutStatic = StringUtils.removeStart(source, "static").trim();
+	    String body = StringUtils.removeStart(bodyWithoutStatic, "{");
+		
+		return StringUtils.removeEnd(body, "}"); 
     }
 }

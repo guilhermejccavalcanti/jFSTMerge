@@ -318,4 +318,21 @@ public class InitializationBlocksHandlerMultipleBlocksTest {
 		assertThat(ctx.initializationBlocksConflicts).isOne();	
 	}
 	
+	@Test
+	public void testInitializationBlocksEditionOrAdditionInBothBranchesDependentVarsWithConditional() {		
+		MergeContext ctx = 	merge.mergeFiles(
+				new File("testfiles/initlblocksmultipleblocks/editionoradditioninbothbranchesdependentvarswithconditional/"
+						+ "left/Test.java"), 
+				new File("testfiles/initlblocksmultipleblocks/editionoradditioninbothbranchesdependentvarswithconditional/"
+						+ "base/Test.java"), 
+				new File("testfiles/initlblocksmultipleblocks/editionoradditioninbothbranchesdependentvarswithconditional/"
+						+ "right/Test.java"), 
+				null);
+		
+		String mergeResult = FilesManager.getStringContentIntoSingleLineNoSpacing(ctx.semistructuredOutput);
+
+		assertThat(mergeResult).contains("publicclassTest{staticinth=4;static{<<<<<<<MINEif(h==4){h=5;}intf=6;intg=6;"
+				+ "=======intb=5;intc=5;intg=5;if(h==4){inte=h;}>>>>>>>YOURS}}");
+		assertThat(ctx.initializationBlocksConflicts).isOne();
+	}
 }
